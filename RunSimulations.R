@@ -20,7 +20,10 @@ library(optparse)
 ## Source functions
 #####
 source("SimulationFunctions.R")
-source("ossat_functions.R")
+source("ossat_functionsMarksAnglin2025.R") # This file is from the supplemental materials of Marks-Anglin et al. (2025). 
+                            # This code is not original to the present manuscript and is included 
+                            # solely to ensure reproducibility of the analyses. All credit for this 
+                            # code belongs to the original authors.
 
 ######
 ### Preliminaries--------------
