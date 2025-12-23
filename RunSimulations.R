@@ -37,6 +37,8 @@ inf_fun_logit <- function(fit){
   infl <- (dm * resid(fit, type = "response")) %*% solve(Ihat)
 }
 
+N <- 10000
+
 ######
 ### Scenario 1: Logistic regression with 3 covariates with pilot samples - Low error, r1 = 200,
 ### n = 800
@@ -49,9 +51,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -88,9 +88,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -127,9 +125,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -166,9 +162,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -205,9 +199,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -244,9 +236,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -283,9 +273,7 @@ my_ns <- c(800,1200,1600)
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovsDataOutside", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4", "my_ns"
+                    "inf_fun_logit", "logit", "tr", "my_ns"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -322,9 +310,7 @@ my_ns <- c(800,1200,1600)
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovsDataOutside", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4", "my_ns"
+                    "inf_fun_logit", "logit", "tr", "my_ns"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -361,9 +347,7 @@ my_ns <- c(800,1200,1600)
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovsDataOutside", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4", "my_ns"
+                    "inf_fun_logit", "logit", "tr", "my_ns"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -400,9 +384,7 @@ my_ns <- c(800,1200,1600)
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovsDataOutside", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4", "my_ns"
+                    "inf_fun_logit", "logit", "tr", "my_ns"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -444,9 +426,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -483,9 +463,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -522,9 +500,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -561,9 +537,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -600,9 +574,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -639,9 +611,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("ThreeCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -678,9 +648,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("SevenCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -717,9 +685,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("SevenCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -756,9 +722,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("SevenCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -795,9 +759,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("SevenCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -834,9 +796,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("SevenCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -873,9 +833,7 @@ scenarios <- c("zeroMean", "unequalVar", "rareEvent", "mixNormal", "T3", "Exp")
 ncores <- detectCores() - 1
 cl <- makeCluster(ncores)
 clusterExport(cl, c("SevenCovs", "N", "expit", "l2", 
-                    "inf_fun_logit", "logit", "tr",
-                    "getMLE.firth", "weighted.model.set1" ,
-                    "weighted.model.seq4"
+                    "inf_fun_logit", "logit", "tr"
 ))
 parallel::clusterEvalQ(cl, {
   library(MASS)
@@ -899,3 +857,4 @@ stopCluster(cl)
 resultsSevenCovsPilotHighErrorR1600n1600 <- do.call(rbind, results_list)
 saveRDS(resultsSevenCovsPilotHighErrorR1600n1600, 
         "results/resultsSevenCovsPilotHighErrorR1600n1600.rds")
+
