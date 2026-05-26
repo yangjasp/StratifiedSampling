@@ -59,6 +59,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -96,6 +97,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -133,6 +135,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -170,6 +173,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -207,6 +211,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -244,6 +249,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -434,6 +440,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -471,6 +478,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -508,6 +516,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -545,6 +554,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -582,6 +592,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -619,6 +630,7 @@ parallel::clusterEvalQ(cl, {
   library(dplyr)
   library(optimall)
   library(logistf)
+  source("MarksAnglinCode/ossat_functions 2.R")
 })
 
 # run sims
@@ -857,4 +869,3 @@ stopCluster(cl)
 resultsSevenCovsPilotHighErrorR1600n1600 <- do.call(rbind, results_list)
 saveRDS(resultsSevenCovsPilotHighErrorR1600n1600, 
         "results/resultsSevenCovsPilotHighErrorR1600n1600.rds")
-

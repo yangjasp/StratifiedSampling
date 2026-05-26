@@ -7,40 +7,73 @@
 ######
 ###### Full data available
 
-ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
+ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low",
+                      split_at = c(0.2, 0.8),
+                      methods = c("SRS", "Case-control", "Stratified",
+                                  "Optimal Poisson prob", "Case-control Surrogate",
+                                  "Stratified with Pilot",
+                                  "Surrogate Optimal Individual prob")){
   # Setup
   expit<-function(eta) exp(eta)/(1+exp(eta))
   logit<-function(p) log(p/(1-p))
   l2<-function(v) sqrt(sum(v*v))
   
-  srs_B0 <- c()
-  srs_B1 <- c()
-  srs_B2 <- c()
-  srs_B3 <- c()
-  cc_B0 <- c()
-  cc_B1 <- c()
-  cc_B2 <- c()
-  cc_B3 <- c()
-  strat_B0 <- c()
-  strat_B1 <- c()
-  strat_B2 <- c()
-  strat_B3 <- c()
-  optp_B0 <- c()
-  optp_B1 <- c()
-  optp_B2 <- c()
-  optp_B3 <- c()
-  ccs_B0 <- c()
-  ccs_B1 <- c()
-  ccs_B2 <- c()
-  ccs_B3 <- c()
-  strats_B0 <- c()
-  strats_B1 <- c()
-  strats_B2 <- c()
-  strats_B3 <- c()
-  opt1_B0 <- c()
-  opt1_B1 <- c()
-  opt1_B2 <- c()
-  opt1_B3 <- c()
+  srs_B0 <- numeric(0)
+  srs_B1 <- numeric(0)
+  srs_B2 <- numeric(0)
+  srs_B3 <- numeric(0)
+  srs_B0_estvar <- numeric(0)
+  srs_B1_estvar <- numeric(0)
+  srs_B2_estvar <- numeric(0)
+  srs_B3_estvar <- numeric(0)
+  cc_B0 <- numeric(0)
+  cc_B1 <- numeric(0)
+  cc_B2 <- numeric(0)
+  cc_B3 <- numeric(0)
+  cc_B0_estvar <- numeric(0)
+  cc_B1_estvar <- numeric(0)
+  cc_B2_estvar <- numeric(0)
+  cc_B3_estvar <- numeric(0)
+  strat_B0 <- numeric(0)
+  strat_B1 <- numeric(0)
+  strat_B2 <- numeric(0)
+  strat_B3 <- numeric(0)
+  strat_B0_estvar <- numeric(0)
+  strat_B1_estvar <- numeric(0)
+  strat_B2_estvar <- numeric(0)
+  strat_B3_estvar <- numeric(0)
+  optp_B0 <- numeric(0)
+  optp_B1 <- numeric(0)
+  optp_B2 <- numeric(0)
+  optp_B3 <- numeric(0)
+  optp_B0_estvar <- numeric(0)
+  optp_B1_estvar <- numeric(0)
+  optp_B2_estvar <- numeric(0)
+  optp_B3_estvar <- numeric(0)
+  ccs_B0 <- numeric(0)
+  ccs_B1 <- numeric(0)
+  ccs_B2 <- numeric(0)
+  ccs_B3 <- numeric(0)
+  ccs_B0_estvar <- numeric(0)
+  ccs_B1_estvar <- numeric(0)
+  ccs_B2_estvar <- numeric(0)
+  ccs_B3_estvar <- numeric(0)
+  strats_B0 <- numeric(0)
+  strats_B1 <- numeric(0)
+  strats_B2 <- numeric(0)
+  strats_B3 <- numeric(0)
+  strats_B0_estvar <- numeric(0)
+  strats_B1_estvar <- numeric(0)
+  strats_B2_estvar <- numeric(0)
+  strats_B3_estvar <- numeric(0)
+  opt1_B0 <- numeric(0)
+  opt1_B1 <- numeric(0)
+  opt1_B2 <- numeric(0)
+  opt1_B3 <- numeric(0)
+  opt1_B0_estvar <- numeric(0)
+  opt1_B1_estvar <- numeric(0)
+  opt1_B2_estvar <- numeric(0)
+  opt1_B3_estvar <- numeric(0)
   
   # Setting
   B0 <- ifelse(scenario == "Exp", -0.5, 0.5)
@@ -139,6 +172,7 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     
     ###
     ### Strategy 1 : SRS
+    if ("SRS" %in% methods) {
     srs <- sample(pop$id,size = n, replace = FALSE)
     srs_data <- pop[pop$id %in% srs,]
     srsmodel <- glm(y ~ X1 + X2 + X3, family=binomial, data=srs_data)
@@ -146,9 +180,16 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     srs_B1[i] <- coef(srsmodel)[2]
     srs_B2[i] <- coef(srsmodel)[3]
     srs_B3[i] <- coef(srsmodel)[4]
+    srs_estvar <- diag(vcov(srsmodel))
+    srs_B0_estvar[i] <- srs_estvar[1]
+    srs_B1_estvar[i] <- srs_estvar[2]
+    srs_B2_estvar[i] <- srs_estvar[3]
+    srs_B3_estvar[i] <- srs_estvar[4]
+    }
     
     ####
     #### Strategy 2: Case-control sample
+    if ("Case-control" %in% methods) {
     
     ## A: Compute strata
     pop$strat <- pop$y
@@ -169,13 +210,31 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     svydesign <- svydesign(id = ~id, strata = ~strat, probs = ~sampling_prob, 
                            data = cc_data)
     ccmodel <- svyglm(y ~ X1 + X2 + X3, design = svydesign, family=quasibinomial)
+    
+    ### For variance estimation with consideration of both initial variance
+    ### due to sampling from superpopulation and variance from subsampling
+    ### use twophase()
+    svydesign_twophase <- twophase(id = list(~1, ~id), 
+                                   strata = list(NULL, ~strat), 
+                                  data = pop, 
+                                  subset = sampled_data$sample_indicator == 1)
+    ccmodel_twophase <- svyglm(y ~ X1 + X2 + X3, 
+                               design = svydesign_twophase, family=quasibinomial)
+    
     cc_B0[i] <- coef(ccmodel)[1]
     cc_B1[i] <- coef(ccmodel)[2]
     cc_B2[i] <- coef(ccmodel)[3]
     cc_B3[i] <- coef(ccmodel)[4]
+    cc_estvar <- diag(vcov(ccmodel_twophase))
+    cc_B0_estvar[i] <- cc_estvar[1]
+    cc_B1_estvar[i] <- cc_estvar[2]
+    cc_B2_estvar[i] <- cc_estvar[3]
+    cc_B3_estvar[i] <- cc_estvar[4]
+    }
       
     ####
     #### Strategy 3: Stratified sample (A-optimal)
+    if ("Stratified" %in% methods) {
     
     pop <- pop.raw
     
@@ -195,17 +254,17 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
       pop <- optimall::split_strata(pop,  strata = "strata",
                                     split_var = "inflB1",
                                     type = "global quantile",
-                                    split_at = c(0.2, 0.8)) %>%
+                                    split_at = split_at) %>%
         dplyr::rename(strata = new_strata) %>%
         optimall::split_strata(strata = "strata",
                                split_var = "inflB2",
                                type = "global quantile",
-                               split_at = c(0.2, 0.8)) %>%
+                               split_at = split_at) %>%
         dplyr::rename(strata = new_strata) %>%
         optimall::split_strata(strata = "strata",
                                split_var = "inflB3",
                                type = "global quantile",
-                               split_at = c(0.2, 0.8)) %>%
+                               split_at = split_at) %>%
         dplyr::rename(strata = new_strata)
     } else {
       # for catX, only split on inflB2 and inflB3 since inflB1 is discrete
@@ -246,13 +305,33 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     svydesign <- svydesign(id = ~id, strata = ~strata, probs = ~sampling_prob, 
                            data = strat_data)
     stratmodel <- svyglm(y ~ X1 + X2 + X3, design = svydesign, family=quasibinomial)
+    
+    ### For variance estimation with consideration of both initial variance
+    ### due to sampling from superpopulation and variance from subsampling
+    ### use twophase()
+    svydesign_twophase <- twophase(id = list(~1, ~id), 
+                                   strata = list(NULL, ~strata), 
+                                   probs = list(NULL, ~sampling_prob),
+                                  data = sampled_data, 
+                                  subset = sampled_data$sample_indicator == 1)
+    stratmodel_twophase <- svyglm(y ~ X1 + X2 + X3, 
+                               design = svydesign_twophase, family=quasibinomial)
+    
+    
     strat_B0[i] <- coef(stratmodel)[1]
     strat_B1[i] <- coef(stratmodel)[2]
     strat_B2[i] <- coef(stratmodel)[3]
     strat_B3[i] <- coef(stratmodel)[4]
+    strat_estvar <- diag(vcov(stratmodel_twophase))
+    strat_B0_estvar[i] <- strat_estvar[1]
+    strat_B1_estvar[i] <- strat_estvar[2]
+    strat_B2_estvar[i] <- strat_estvar[3]
+    strat_B3_estvar[i] <- strat_estvar[4]
+    }
     
     ####
     ### Strategy 4: Optimal Poisson sampling (uses full data MLE)
+    if ("Optimal Poisson prob" %in% methods) {
     
     pop <- pop.raw
     
@@ -289,9 +368,16 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     optp_B1[i] <- coef(optmodel)[2]
     optp_B2[i] <- coef(optmodel)[3]
     optp_B3[i] <- coef(optmodel)[4]
+    optp_estvar <- diag(vcov(optmodel))
+    optp_B0_estvar[i] <- optp_estvar[1]
+    optp_B1_estvar[i] <- optp_estvar[2]
+    optp_B2_estvar[i] <- optp_estvar[3]
+    optp_B3_estvar[i] <- optp_estvar[4]
+    }
      
     ####
     #### Strategy 5: Case-control sampling using surrogate 
+    if ("Case-control Surrogate" %in% methods) {
     
     pop <- pop.raw
     
@@ -313,13 +399,31 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     svydesign <- svydesign(id = ~id, strata = ~strat, probs = ~sampling_prob, 
                            data = ccs_data)
     ccsmodel <- svyglm(y ~ X1 + X2 + X3, design = svydesign, family=quasibinomial)
+    
+    ### For variance estimation with consideration of both initial variance
+    ### due to sampling from superpopulation and variance from subsampling
+    ### use twophase()
+    svydesign_twophase <- twophase(id = list(~1, ~id), 
+                                   strata = list(NULL, ~strat), 
+                                   data = pop, 
+                                   subset = sampled_data$sample_indicator == 1)
+    ccsmodel_twophase <- svyglm(y ~ X1 + X2 + X3, 
+                               design = svydesign_twophase, family=quasibinomial)
+    
     ccs_B0[i] <- coef(ccsmodel)[1]
     ccs_B1[i] <- coef(ccsmodel)[2]
     ccs_B2[i] <- coef(ccsmodel)[3]
     ccs_B3[i] <- coef(ccsmodel)[4] 
+    ccs_estvar <- diag(vcov(ccsmodel_twophase))
+    ccs_B0_estvar[i] <- ccs_estvar[1]
+    ccs_B1_estvar[i] <- ccs_estvar[2]
+    ccs_B2_estvar[i] <- ccs_estvar[3]
+    ccs_B3_estvar[i] <- ccs_estvar[4]
+    }
     
     ####
     #### Strategy 6: Stratified sampling using pilot
+    if ("Stratified with Pilot" %in% methods) {
     
     pop <- pop.raw
     
@@ -338,17 +442,17 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     pop <- optimall::split_strata(pop,  strata = "strata",
                                   split_var = "inflB1_obs",
                                   type = "global quantile",
-                                  split_at = c(0.2, 0.8)) %>%
+                                  split_at = split_at) %>%
       dplyr::rename(strata = new_strata) %>%
       optimall::split_strata(strata = "strata",
                              split_var = "inflB2_obs",
                              type = "global quantile",
-                             split_at = c(0.2, 0.8)) %>%
+                             split_at = split_at) %>%
       dplyr::rename(strata = new_strata) %>%
       optimall::split_strata(strata = "strata",
                              split_var = "inflB3_obs",
                              type = "global quantile",
-                             split_at = c(0.2, 0.8)) %>%
+                             split_at = split_at) %>%
       dplyr::rename(strata = new_strata)
     
     levels(pop$strata)<-1:length(table(pop$strata))
@@ -406,7 +510,7 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
                                        allocation_method = "Neyman", 
                                        already_sampled = "sample_indicator")
     design2$n_to_sample <- pmin(design2$npop - design2$nsample_prior, design2$n_to_sample)
-    design2$probs2 <- (design2$nsample_prior + design2$n_to_sample)/design$npop
+    design2$probs2 <- (design2$nsample_prior + design2$n_to_sample)/design2$npop
     
     sampled_data2 <- optimall::sample_strata(sampled_data, strata = "strata",
                                              id = "id", design_data = design2,
@@ -420,13 +524,31 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
                            data = strat_data2)
     stratmodel2 <- svyglm(y ~ X1 + X2 + X3, design = svydesign, family=quasibinomial)
     
+    ### For variance estimation with consideration of both initial variance
+    ### due to sampling from superpopulation and variance from subsampling
+    ### use twophase()
+    svydesign_twophase <- twophase(id = list(~1, ~id), 
+                                   strata = list(NULL, ~strata), 
+                                   data = sampled_data2, 
+                                   subset = sampled_data2$sample_indicator == 1| 
+                                     sampled_data2$sampled_pilot == 1)
+    stratmodel2_twophase <- svyglm(y ~ X1 + X2 + X3, 
+                                  design = svydesign_twophase, family=quasibinomial)
+    
     strats_B0[i] <- coef(stratmodel2)[1]
     strats_B1[i] <- coef(stratmodel2)[2]
     strats_B2[i] <- coef(stratmodel2)[3]
     strats_B3[i] <- coef(stratmodel2)[4]
+    strats_estvar <- diag(vcov(stratmodel2_twophase))
+    strats_B0_estvar[i] <- strats_estvar[1]
+    strats_B1_estvar[i] <- strats_estvar[2]
+    strats_B2_estvar[i] <- strats_estvar[3]
+    strats_B3_estvar[i] <- strats_estvar[4]
+    }
     
     ####
     #### Strategy 7: Optimall surrogate sampling of Marks-Anglin et al (2025)
+    if ("Surrogate Optimal Individual prob" %in% methods) {
     
     pop <- pop.raw
     
@@ -446,7 +568,7 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     Mx.y <- t(w.y*X) %*% X / n # Same as my Mx
     
     ## case-control sampling, pilot index 
-    stage1.weights <- rep(NA, n)
+    stage1.weights <- rep(NA, N)
     stage1.weights[s==1] <- 0.5*(1/length(s[s==1]))
     stage1.weights[s==0] <- 0.5*(1/length(s[s==0]))
     
@@ -510,6 +632,12 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     opt1_B1[i] <- coef(optmodel1)[2]
     opt1_B2[i] <- coef(optmodel1)[3]
     opt1_B3[i] <- coef(optmodel1)[4]
+    opt1_estvar <- diag(optmodel1$cov)
+    opt1_B0_estvar[i] <- opt1_estvar[1]
+    opt1_B1_estvar[i] <- opt1_estvar[2]
+    opt1_B2_estvar[i] <- opt1_estvar[3]
+    opt1_B3_estvar[i] <- opt1_estvar[4]
+    }
       
   }
     
@@ -520,6 +648,10 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     mean_B1 = mean(srs_B1),
     mean_B2 = mean(srs_B2),
     mean_B3 = mean(srs_B3),
+    B0_estvar = mean(srs_B0_estvar),
+    B1_estvar = mean(srs_B1_estvar),
+    B2_estvar = mean(srs_B2_estvar),
+    B3_estvar = mean(srs_B3_estvar),
     var_B0 = var(srs_B0),
     var_B1 = var(srs_B1),
     var_B2 = var(srs_B2), 
@@ -536,6 +668,10 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     mean_B1 = mean(cc_B1),
     mean_B2 = mean(cc_B2),
     mean_B3 = mean(cc_B3),
+    B0_estvar = mean(cc_B0_estvar),
+    B1_estvar = mean(cc_B1_estvar),
+    B2_estvar = mean(cc_B2_estvar),
+    B3_estvar = mean(cc_B3_estvar),
     var_B0 = var(cc_B0),
     var_B1 = var(cc_B1),
     var_B2 = var(cc_B2),
@@ -552,6 +688,10 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     mean_B1 = mean(strat_B1),
     mean_B2 = mean(strat_B2),
     mean_B3 = mean(strat_B3),
+    B0_estvar = mean(strat_B0_estvar),
+    B1_estvar = mean(strat_B1_estvar),
+    B2_estvar = mean(strat_B2_estvar),
+    B3_estvar = mean(strat_B3_estvar),
     var_B0 = var(strat_B0),
     var_B1 = var(strat_B1),
     var_B2 = var(strat_B2),
@@ -568,6 +708,10 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     mean_B1 = mean(optp_B1),
     mean_B2 = mean(optp_B2),
     mean_B3 = mean(optp_B3),
+    B0_estvar = mean(optp_B0_estvar),
+    B1_estvar = mean(optp_B1_estvar),
+    B2_estvar = mean(optp_B2_estvar),
+    B3_estvar = mean(optp_B3_estvar),
     var_B0 = var(optp_B0),
     var_B1 = var(optp_B1),
     var_B2 = var(optp_B2),
@@ -584,6 +728,10 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     mean_B1 = mean(ccs_B1),
     mean_B2 = mean(ccs_B2),
     mean_B3 = mean(ccs_B3),
+    B0_estvar = mean(ccs_B0_estvar),
+    B1_estvar = mean(ccs_B1_estvar),
+    B2_estvar = mean(ccs_B2_estvar),
+    B3_estvar = mean(ccs_B3_estvar),
     var_B0 = var(ccs_B0),
     var_B1 = var(ccs_B1),
     var_B2 = var(ccs_B2),
@@ -600,6 +748,10 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     mean_B1 = mean(strats_B1),
     mean_B2 = mean(strats_B2),
     mean_B3 = mean(strats_B3),
+    B0_estvar = mean(strats_B0_estvar),
+    B1_estvar = mean(strats_B1_estvar),
+    B2_estvar = mean(strats_B2_estvar),
+    B3_estvar = mean(strats_B3_estvar),
     var_B0 = var(strats_B0),
     var_B1 = var(strats_B1),
     var_B2 = var(strats_B2),
@@ -616,6 +768,10 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     mean_B1 = mean(opt1_B1),
     mean_B2 = mean(opt1_B2),
     mean_B3 = mean(opt1_B3),
+    B0_estvar = mean(opt1_B0_estvar),
+    B1_estvar = mean(opt1_B1_estvar),
+    B2_estvar = mean(opt1_B2_estvar),
+    B3_estvar = mean(opt1_B3_estvar),
     var_B0 = var(opt1_B0),
     var_B1 = var(opt1_B1),
     var_B2 = var(opt1_B2),
@@ -628,6 +784,11 @@ ThreeCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
   ))
   results$varsum <- results$var_B0 + results$var_B1 + results$var_B2 + results$var_B3
   results$MSEsum <- results$MSE_B0 + results$MSE_B1 + results$MSE_B2 + results$MSE_B3
+  results$coverage_B0 <- c(mean(abs(srs_B0 - B0) <= 1.96*sqrt(srs_B0_estvar)), mean(abs(cc_B0 - B0) <= 1.96*sqrt(cc_B0_estvar)), mean(abs(strat_B0 - B0) <= 1.96*sqrt(strat_B0_estvar)), mean(abs(optp_B0 - B0) <= 1.96*sqrt(optp_B0_estvar)), mean(abs(ccs_B0 - B0) <= 1.96*sqrt(ccs_B0_estvar)), mean(abs(strats_B0 - B0) <= 1.96*sqrt(strats_B0_estvar)), mean(abs(opt1_B0 - B0) <= 1.96*sqrt(opt1_B0_estvar)))
+  results$coverage_B1 <- c(mean(abs(srs_B1 - B1) <= 1.96*sqrt(srs_B1_estvar)), mean(abs(cc_B1 - B1) <= 1.96*sqrt(cc_B1_estvar)), mean(abs(strat_B1 - B1) <= 1.96*sqrt(strat_B1_estvar)), mean(abs(optp_B1 - B1) <= 1.96*sqrt(optp_B1_estvar)), mean(abs(ccs_B1 - B1) <= 1.96*sqrt(ccs_B1_estvar)), mean(abs(strats_B1 - B1) <= 1.96*sqrt(strats_B1_estvar)), mean(abs(opt1_B1 - B1) <= 1.96*sqrt(opt1_B1_estvar)))
+  results$coverage_B2 <- c(mean(abs(srs_B2 - B2) <= 1.96*sqrt(srs_B2_estvar)), mean(abs(cc_B2 - B2) <= 1.96*sqrt(cc_B2_estvar)), mean(abs(strat_B2 - B2) <= 1.96*sqrt(strat_B2_estvar)), mean(abs(optp_B2 - B2) <= 1.96*sqrt(optp_B2_estvar)), mean(abs(ccs_B2 - B2) <= 1.96*sqrt(ccs_B2_estvar)), mean(abs(strats_B2 - B2) <= 1.96*sqrt(strats_B2_estvar)), mean(abs(opt1_B2 - B2) <= 1.96*sqrt(opt1_B2_estvar)))
+  results$coverage_B3 <- c(mean(abs(srs_B3 - B3) <= 1.96*sqrt(srs_B3_estvar)), mean(abs(cc_B3 - B3) <= 1.96*sqrt(cc_B3_estvar)), mean(abs(strat_B3 - B3) <= 1.96*sqrt(strat_B3_estvar)), mean(abs(optp_B3 - B3) <= 1.96*sqrt(optp_B3_estvar)), mean(abs(ccs_B3 - B3) <= 1.96*sqrt(ccs_B3_estvar)), mean(abs(strats_B3 - B3) <= 1.96*sqrt(strats_B3_estvar)), mean(abs(opt1_B3 - B3) <= 1.96*sqrt(opt1_B3_estvar)))
+  results <- results[results$method %in% methods, , drop = FALSE]
   return(results)
 }
 
@@ -1094,7 +1255,7 @@ ThreeCovsDataOutside <- function(N, n, nreps = 1000, scenario, r1, error = "low"
     Mx.y <- t(w.y*X) %*% X / n # Same as my Mx
     
     ## case-control sampling, pilot index 
-    stage1.weights <- rep(NA, n)
+    stage1.weights <- rep(NA, N)
     stage1.weights[s==1] <- 0.5*(1/length(s[s==1]))
     stage1.weights[s==0] <- 0.5*(1/length(s[s==0]))
     
@@ -1827,7 +1988,7 @@ SevenCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     Mx.y <- t(w.y*X) %*% X / n # Same as my Mx
     
     ## case-control sampling, pilot index 
-    stage1.weights <- rep(NA, n)
+    stage1.weights <- rep(NA, N)
     stage1.weights[s==1] <- 0.5*(1/length(s[s==1]))
     stage1.weights[s==0] <- 0.5*(1/length(s[s==0]))
     
@@ -2114,4 +2275,3 @@ SevenCovs <- function(N, n, nreps = 1000, scenario, r1, error = "low"){
     results$MSE_B4 + results$MSE_B5 + results$MSE_B6 + results$MSE_B7
   return(results)
 }
-
